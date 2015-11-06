@@ -27,6 +27,7 @@
 		public var downPressed: Boolean = false;
 		public var qPressed: Boolean = false;
 		public var ePressed: Boolean = false;
+		public var leftMousePressed: Boolean = false;
 
 		public var key: KeyObject;
 		public var speed: Number = 5;
@@ -35,7 +36,10 @@
 		public var jumpAccelerator: int = 3;
 
 		public var i: int;
+		public var j: int;
 		public var number: Number;
+		public var number2: Number;
+		public var number3: Number;
 
 		public var rotSpeed: Number;
 		public var coursor: Coursor;
@@ -51,13 +55,22 @@
 			addEventListener(MouseEvent.CLICK, toggleFullscreen);
 			stage.addEventListener(FullScreenEvent.FULL_SCREEN, onFullscreen);
 			stage.addEventListener(MouseEvent.CLICK, shootBullet, false, 0, true);
+			stage.addEventListener(MouseEvent.MOUSE_DOWN, leftMousePressing, false, 0, true);
+			stage.addEventListener(MouseEvent.MOUSE_UP, leftMouseUnpressing, false, 0, true);
 
 			key = new KeyObject(stage);
 			addEventListener(Event.ENTER_FRAME, loopGame, false, 0, true);
 		}
+		
+		public function leftMousePressing(): void {
+			leftMousePressed = true;
+		}
+		public function leftMouseUnpressing(): void {
+			leftMousePressed = false;
+		}
 
 		public function loopGame(e: Event): void {
-
+			var token:Boolean = false;
 			checkKeypresses();
 
 			number = speed / sqrt2;
@@ -75,27 +88,39 @@
 			}
 
 			if (roll > 0) {
-				for (i = jumpAccelerator; i > 0; --i) {
-					point = level.localToGlobal(new Point(level.player.x, level.player.y));
-					if (!level.walls.hitTestPoint(point.x + speed, point.y, true)) {
-						level.x -= speed;
-						point = level.globalToLocal(playerPoint);
-						level.player.x = point.x;
-						level.player.y = point.y;
+				number = 0;
+				number2 = 0;
+				number3 = 0;
+				for (i = 1; i <= jumpAccelerator; ++i) {
+					//point = level.localToGlobal(new Point(level.player.x, level.player.y));
+					if (!level.walls.hitTestPoint(point.x + speed*i, point.y, true)) {
+						number -= speed;
+						number2 += Math.cos(level.player.rotation * (Math.PI / 180))*speed;
+						number3 += Math.sin(level.player.rotation * (Math.PI / 180))*speed;
+					} else {
+						break;
 					}
 				}
 				--roll;
+				token = true;
 			} else if (roll < 0) {
-				for (i = jumpAccelerator; i > 0; --i) {
-					point = level.localToGlobal(new Point(level.player.x, level.player.y));
-					if (!level.walls.hitTestPoint(point.x - speed, point.y, true)) {
-						level.x += speed;
-						point = level.globalToLocal(playerPoint);
-						level.player.x = point.x;
-						level.player.y = point.y;
+				number = 0;
+				number2 = 0;
+				number3 = 0;
+				for (i = 1; i <= jumpAccelerator; ++i) {
+					//point = level.localToGlobal(new Point(level.player.x, level.player.y));
+					if (!level.walls.hitTestPoint(point.x - speed*i, point.y, true)) {
+						number += speed;
+						number2 -= Math.cos(level.player.rotation * (Math.PI / 180))*speed;
+						number3 -= Math.sin(level.player.rotation * (Math.PI / 180))*speed;
+						//level.x += speed;
+						//point = level.globalToLocal(playerPoint);
+					} else {
+						break;
 					}
 				}
 				++roll;
+				token = true;
 			} else {
 
 				point = level.localToGlobal(new Point(level.player.x, level.player.y));
@@ -131,6 +156,12 @@
 				level.player.x = point.x;
 				level.player.y = point.y; //помещение игрока в то место в локальной системе координат, которое соответствует месту игрока в глобальных координатах (playerPoint) 
 
+			}
+			
+			if (token == true) {
+				level.x+=number;
+				level.player.x+=number2;
+				level.player.y+=number3;
 			}
 
 			level.loop(); //запуск функции ниже уровнем, отвечающей за запуск соответствующих функций всех юнитов
