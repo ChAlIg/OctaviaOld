@@ -13,8 +13,12 @@
 		public var ambient: Ambient;
 		public var walls: Walls;
 		public var little_explosion: Little_explosion;
-		public var units: Array = [];
+		public var bulletList: Array = [];
+		public var unitList: Array = [];
 		public var point: Point;
+		public var info: Info;
+		
+		public var i: int;
 
 		public function Level(X: int, Y: int): void {
 			this.x = X;
@@ -25,56 +29,69 @@
 			addChild(walls);
 			trash = new Trash(320, 240);
 			addChild(trash);
-			units.push(trash);
+			unitList.push(trash);
 			trash = new Trash(234, 556);
 			addChild(trash);
-			units.push(trash);
+			unitList.push(trash);
 			trash = new Trash(34, 766);
 			addChild(trash);
-			units.push(trash);
+			unitList.push(trash);
 			trash = new Trash(457, 23);
 			addChild(trash);
-			units.push(trash);
+			unitList.push(trash);
 			trash = new Trash(345, 423);
 			addChild(trash);
-			units.push(trash);
+			unitList.push(trash);
 			trash = new Trash(264, 567);
 			addChild(trash);
-			units.push(trash);
+			unitList.push(trash);
 			trash = new Trash(32, 43);
 			addChild(trash);
-			units.push(trash);
+			unitList.push(trash);
 			trash = new Trash(123, 123);
 			addChild(trash);
-			units.push(trash);
-			trash = new Trash(500, 43);
+			unitList.push(trash);
+			trash = new Trash(400, 550);
 			addChild(trash);
-			units.push(trash);
+			bulletList.push(trash);
 			player = new Player(400, 550);
 			addChild(player);
-			units.push(player);
+			unitList.push(player);
+			info = new Info(0, 0);
+			addChild(info);
+			
 		}
 		public function loop(): void {
-
-			if (units.length > 0) //if there are any bullets in the bullet list
+			
+			if (unitList.length > 0) //if there are any units in the unit list
 			{
-				for (var i: int = units.length - 1; i >= 0; --i) //for each one
+				for (i = unitList.length - 1; i >= 0; --i) //for each one
 				{
-					units[i].loop(); //call its loop() function
-					if (units[i] is Bullet_pistol) {
-						point = localToGlobal(new Point(units[i].x, units[i].y));
+					unitList[i].loop();
+				}
+			}
+
+			if (bulletList.length > 0) //if there are any bullets in the bullet list
+			{
+				for (i = bulletList.length - 1; i >= 0; --i) //for each one
+				{
+					bulletList[i].loop(); //call its loop() function
+					if (true) {
+						point = localToGlobal(new Point(bulletList[i].x, bulletList[i].y));
 						if (walls.hitTestPoint(point.x, point.y, true)) {
-							units[i].death = true;
+							bulletList[i].death = true;
 						}
 					}
-					if (units[i].death) {
-						little_explosion = new Little_explosion(units[i].x, units[i].y);
+					if (bulletList[i].death) {
+						little_explosion = new Little_explosion(bulletList[i].x, bulletList[i].y);
 						addChild(little_explosion);
-						removeChild(units[i]);
-						units.splice(i, 1);
+						removeChild(bulletList[i]);
+						bulletList.splice(i, 1);
 					}
 				}
 			}
+			
+			info.abc.text = new String("units = " + unitList.length + ", bullets = " + bulletList.length);
 		}
 
 	}

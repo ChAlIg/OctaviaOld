@@ -38,8 +38,10 @@
 		public var i: int;
 		public var j: int;
 		public var number: Number;
+		public var number1: Number;
 		public var number2: Number;
 		public var number3: Number;
+		public var token:Boolean = false;
 
 		public var rotSpeed: Number;
 		public var coursor: Coursor;
@@ -54,7 +56,7 @@
 
 			addEventListener(MouseEvent.CLICK, toggleFullscreen);
 			stage.addEventListener(FullScreenEvent.FULL_SCREEN, onFullscreen);
-			stage.addEventListener(MouseEvent.CLICK, shootBullet, false, 0, true);
+			//stage.addEventListener(MouseEvent.CLICK, shootBullet, false, 0, true);
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, leftMousePressing, false, 0, true);
 			stage.addEventListener(MouseEvent.MOUSE_UP, leftMouseUnpressing, false, 0, true);
 
@@ -62,55 +64,57 @@
 			addEventListener(Event.ENTER_FRAME, loopGame, false, 0, true);
 		}
 		
-		public function leftMousePressing(): void {
+		public function leftMousePressing(e: MouseEvent): void {
 			leftMousePressed = true;
 		}
-		public function leftMouseUnpressing(): void {
+		public function leftMouseUnpressing(e: MouseEvent): void {
 			leftMousePressed = false;
 		}
 
 		public function loopGame(e: Event): void {
-			var token:Boolean = false;
+			
 			checkKeypresses();
-
+			token = false;
 			number = speed / sqrt2;
 
 			if (qPressed) {
-				if (roll == 0 && level.player.energy >= 0) {
-					roll = -20;
+				if ((roll == 0) && (level.player.energy >= 0)) {
+					roll = -10;
 					level.player.energy -= level.player.jumpCost;
 				}
 			} else if (ePressed) {
-				if (roll == 0 && level.player.energy >= 0) {
-					roll = 20;
+				if ((roll == 0) && (level.player.energy >= 0)) {
+					roll = 10;
 					level.player.energy -= level.player.jumpCost;
 				}
 			}
 
 			if (roll > 0) {
-				number = 0;
+				token = true;
+				--roll;
+				number1 = 0;
 				number2 = 0;
 				number3 = 0;
 				for (i = 1; i <= jumpAccelerator; ++i) {
-					//point = level.localToGlobal(new Point(level.player.x, level.player.y));
+					point = level.localToGlobal(new Point(level.player.x, level.player.y));
 					if (!level.walls.hitTestPoint(point.x + speed*i, point.y, true)) {
-						number -= speed;
+						number1 -= speed;
 						number2 += Math.cos(level.player.rotation * (Math.PI / 180))*speed;
 						number3 += Math.sin(level.player.rotation * (Math.PI / 180))*speed;
 					} else {
 						break;
 					}
 				}
-				--roll;
-				token = true;
 			} else if (roll < 0) {
-				number = 0;
+				token = true;
+				++roll;
+				number1 = 0;
 				number2 = 0;
 				number3 = 0;
 				for (i = 1; i <= jumpAccelerator; ++i) {
-					//point = level.localToGlobal(new Point(level.player.x, level.player.y));
+					point = level.localToGlobal(new Point(level.player.x, level.player.y));
 					if (!level.walls.hitTestPoint(point.x - speed*i, point.y, true)) {
-						number += speed;
+						number1 += speed;
 						number2 -= Math.cos(level.player.rotation * (Math.PI / 180))*speed;
 						number3 -= Math.sin(level.player.rotation * (Math.PI / 180))*speed;
 						//level.x += speed;
@@ -119,8 +123,7 @@
 						break;
 					}
 				}
-				++roll;
-				token = true;
+				
 			} else {
 
 				point = level.localToGlobal(new Point(level.player.x, level.player.y));
@@ -159,9 +162,13 @@
 			}
 			
 			if (token == true) {
-				level.x+=number;
-				level.player.x+=number2;
-				level.player.y+=number3;
+				level.x += number1;
+				level.player.x += number2;
+				level.player.y += number3;
+			}
+			
+			if (leftMousePressed) {
+				shootingBullet();
 			}
 
 			level.loop(); //запуск функции ниже уровнем, отвечающей за запуск соответствующих функций всех юнитов
@@ -243,11 +250,19 @@
 			coursor.moving(e.movementY);
 
 		}
-		public function shootBullet(e: MouseEvent): void {
+		/*public function shootBullet(e: MouseEvent): void {
 			if (level.player.energy >= 0) {
 				var bullet_pistol: Bullet_pistol = new Bullet_pistol(stage, level.player.x, level.player.y, level.player.rotation + (Math.random() * 30 - 15) * (coursor.scaleX - 1));
 				level.units.push(bullet_pistol); //add this bullet to the bulletList array
 				level.addChild(bullet_pistol);
+			}
+		}*/
+		public function shootingBullet(): void {
+			if ((level.player.energy >= 0) && (level.player.shotDelay == 0)) {
+				var bullet_pistol: Bullet_pistol = new Bullet_pistol(level, level.player.x, level.player.y, level.player.rotation + (Math.random() * 30 - 15) * (coursor.scaleX - 1), 12 + Math.round((510 - coursor.y)/15));
+				level.bulletList.push(bullet_pistol); //add this bullet to the bulletList array
+				level.addChild(bullet_pistol);
+				level.player.shotDelay = 8;
 			}
 		}
 	}

@@ -4,11 +4,11 @@
 	import flash.events.Event;
 
 	public class Player extends MovieClip {
-		public var energyMax: int = 180;
+		public var energyMax: int = 190;
 		public var healthMax: int = 10;
 		public var energy: int = 0;
 		public var health: int = healthMax;
-		public var jumpCost: int = 0;
+		public var jumpCost: int = 100;
 		public var death: Boolean = false;
 		public var shotDelay: int = 0;
 
